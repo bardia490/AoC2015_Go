@@ -1,6 +1,9 @@
 package day1
 
 import (
+	"fmt"
+	"io"
+	"os"
 	"strings"
 )
 
@@ -23,7 +26,9 @@ func MoveFloors(in string) int {
 	return result
 }
 
-func Solution1(in []byte) int {
+func Solution1(f *os.File) {
+	in, _ := io.ReadAll(f)
+	f.Seek(0, io.SeekStart)
 	result := 0
 	contents := strings.SplitSeq(string(in), "\n")
 
@@ -31,7 +36,7 @@ func Solution1(in []byte) int {
 		// process the contents
 		result += MoveFloors(line)
 	}
-	return result
+	fmt.Println("the solution to day1 part 1 is:", result)
 }
 
 type solution2Error struct{}
@@ -40,7 +45,8 @@ func (e solution2Error) Error() string {
 	return "could not find the solution to the problem"
 }
 
-func Solution2(in []byte) (int, error) {
+func Solution2(f *os.File) {
+	in, _ := io.ReadAll(f)
 	result := 0
 	contents := strings.SplitSeq(string(in), "\n")
 
@@ -54,10 +60,11 @@ func Solution2(in []byte) (int, error) {
 				result -= 1
 			}
 			if result == -1 {
-				return index + 1, nil
+				fmt.Println("the solution to day1 part 2 is:", index+1)
+				return
 			}
 		}
 	}
 	// if we reached here something has gone wrong and no answer has been found
-	return 0, solution2Error{}
+	fmt.Println("something went wrong with the part2 solution of day1 and the basement was never found")
 }
