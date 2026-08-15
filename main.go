@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"local/Aoc2015/day1"
 	"local/Aoc2015/day2"
+	"local/Aoc2015/day3"
 	"os"
 )
 
@@ -28,5 +29,8 @@ func main() {
 	case "2":
 		day2.Solution1(f)
 		day2.Solution2(f)
+	case "3":
+		day3.Solution1(f)
+		day3.Solution2(f)
 	}
 }

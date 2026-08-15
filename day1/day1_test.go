@@ -1,7 +1,7 @@
 package day1
 
 import (
-	"local/Aoc2015/lib"
+	"local/Aoc2015/lib/functional"
 	"testing"
 )
 
@@ -17,7 +17,7 @@ func TestAdd(t *testing.T) {
 func TestMoveFloors(t *testing.T) {
 	wantend_results := [5]int{0, 3, 3, -1, -3}
 	inputs := [5]string{"(())", "(()(()(", "))(((((", "))(", ")())())"}
-	got_results := lib.Map(MoveFloors, inputs[:])
+	got_results := functional.Map(MoveFloors, inputs[:])
 
 	for index, result := range got_results {
 		got := wantend_results[index]

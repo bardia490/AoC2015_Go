@@ -1,4 +1,4 @@
-package lib
+package functional
 
 // create a generic type for the function that turns one input to
 // one output
@@ -15,4 +15,15 @@ func Map[T, U any](f mappingFunction[T, U], in []T) []U {
 	}
 
 	return result
+}
+
+// the folding function should take a generic variable of type T
+// and a generic accumulator of type A
+type foldingFunction[A, T any] func(A, T) A
+
+func FoldMap[K comparable, V, A any](f foldingFunction[A, V], acc A, m map[K]V) (accumulator A) {
+	for _, elem := range m {
+		acc = f(acc, elem)
+	}
+	return acc
 }
