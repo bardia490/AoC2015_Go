@@ -1,9 +1,9 @@
 package day3
 
 import (
+	"Aoc2015/lib/set"
 	"fmt"
 	"io"
-	"local/Aoc2015/lib/set"
 	"os"
 )
 

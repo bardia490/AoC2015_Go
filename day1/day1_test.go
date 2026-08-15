@@ -1,7 +1,7 @@
 package day1
 
 import (
-	"local/Aoc2015/lib/functional"
+	"Aoc2015/lib/functional"
 	"testing"
 )
 

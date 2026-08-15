@@ -1,10 +1,11 @@
 package main
 
 import (
+	"Aoc2015/day1"
+	"Aoc2015/day2"
+	"Aoc2015/day3"
+	"Aoc2015/day4"
 	"fmt"
-	"local/Aoc2015/day1"
-	"local/Aoc2015/day2"
-	"local/Aoc2015/day3"
 	"os"
 )
 
@@ -32,5 +33,8 @@ func main() {
 	case "3":
 		day3.Solution1(f)
 		day3.Solution2(f)
+	case "4":
+		day4.Solution1(f)
+		day4.Solution2(f)
 	}
 }
