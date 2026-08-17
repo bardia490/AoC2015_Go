@@ -9,19 +9,7 @@ import (
 	"strings"
 )
 
-type point struct {
-	x, y uint32
-}
-
-func InitializeLights(lights map[point]bool) {
-	for x := range 1000 {
-		for y := range 1000 {
-			lights[point{x: uint32(x), y: uint32(y)}] = false
-		}
-	}
-}
-
-func UpdateLights(lights map[point]bool, line string) {
+func UpdateLights(lights []bool, line string) {
 	instructions := strings.Split(line, " ")
 
 	if instructions[0] == "turn" {
@@ -57,14 +45,14 @@ func UpdateLights(lights map[point]bool, line string) {
 			return
 		}
 
+		new_instruction := false
+		if instructions[1] == "on" {
+			new_instruction = true
+		}
+
 		for x := x1; x <= x2; x++ {
 			for y := y1; y <= y2; y++ {
-				switch instructions[1] {
-				case "on":
-					lights[point{x: uint32(x), y: uint32(y)}] = true
-				case "off":
-					lights[point{x: uint32(x), y: uint32(y)}] = false
-				}
+				lights[1000*x+y] = new_instruction
 			}
 		}
 	} else { // toggle case
@@ -90,13 +78,13 @@ func UpdateLights(lights map[point]bool, line string) {
 
 		for x := x1; x <= x2; x++ {
 			for y := y1; y <= y2; y++ {
-				lights[point{x: uint32(x), y: uint32(y)}] = !lights[point{x: uint32(x), y: uint32(y)}]
+				lights[1000*x+y] = !lights[1000*x+y]
 			}
 		}
 	}
 }
 
-func CountLitLights(lights map[point]bool) uint32 {
+func CountLitLights(lights []bool) uint32 {
 	var result uint32
 
 	for _, val := range lights {
@@ -107,15 +95,7 @@ func CountLitLights(lights map[point]bool) uint32 {
 	return result
 }
 
-func InitializeLights2(lights map[point]uint32) {
-	for x := range 1000 {
-		for y := range 1000 {
-			lights[point{x: uint32(x), y: uint32(y)}] = 0
-		}
-	}
-}
-
-func UpdateLights2(lights map[point]uint32, line string) {
+func UpdateLights2(lights []uint32, line string) {
 	instructions := strings.Split(line, " ")
 
 	if instructions[0] == "turn" {
@@ -151,15 +131,14 @@ func UpdateLights2(lights map[point]uint32, line string) {
 			return
 		}
 
+		next_instruction := -1
+		if instructions[1] == "on" {
+			next_instruction = 1
+		}
 		for x := x1; x <= x2; x++ {
 			for y := y1; y <= y2; y++ {
-				switch instructions[1] {
-				case "on":
-					lights[point{x: uint32(x), y: uint32(y)}] += 1
-				case "off":
-					if lights[point{x: uint32(x), y: uint32(y)}] > 0 {
-						lights[point{x: uint32(x), y: uint32(y)}] -= 1
-					}
+				if next_instruction > 0 || lights[1000*x+y] > 0 {
+					lights[1000*x+y] += uint32(next_instruction)
 				}
 			}
 		}
@@ -186,13 +165,13 @@ func UpdateLights2(lights map[point]uint32, line string) {
 
 		for x := x1; x <= x2; x++ {
 			for y := y1; y <= y2; y++ {
-				lights[point{x: uint32(x), y: uint32(y)}] += 2
+				lights[1000*x+y] += 2
 			}
 		}
 	}
 }
 
-func CountLitLights2(lights map[point]uint32) uint32 {
+func CountLitLights2(lights []uint32) uint32 {
 	var result uint32
 
 	for _, val := range lights {
@@ -204,8 +183,7 @@ func CountLitLights2(lights map[point]uint32) uint32 {
 func Solution1(f *os.File) {
 	sc := bufio.NewScanner(f)
 
-	lights := make(map[point]bool, 1000*1000)
-	InitializeLights(lights)
+	lights := make([]bool, 1000*1000)
 
 	for sc.Scan() {
 		line := sc.Text()
@@ -213,7 +191,7 @@ func Solution1(f *os.File) {
 			continue
 		}
 
-		UpdateLights(lights, strings.TrimSpace(line))
+		UpdateLights(lights, line)
 	}
 
 	if err := sc.Err(); err != nil {
@@ -227,8 +205,7 @@ func Solution1(f *os.File) {
 func Solution2(f *os.File) {
 	sc := bufio.NewScanner(f)
 
-	lights := make(map[point]uint32, 1000*1000)
-	InitializeLights2(lights)
+	lights := make([]uint32, 1000*1000)
 
 	for sc.Scan() {
 		line := sc.Text()
@@ -236,7 +213,7 @@ func Solution2(f *os.File) {
 			continue
 		}
 
-		UpdateLights2(lights, strings.TrimSpace(line))
+		UpdateLights2(lights, line)
 	}
 
 	if err := sc.Err(); err != nil {
