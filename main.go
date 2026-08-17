@@ -7,6 +7,7 @@ import (
 	"Aoc2015/day4"
 	"Aoc2015/day5"
 	"Aoc2015/day6"
+	"Aoc2015/day7"
 	"fmt"
 	"os"
 )
@@ -24,7 +25,7 @@ func main() {
 	}
 	defer f.Close()
 
-	// this is just a hack until i add a new interface or something
+	// this is just a hack until i add a new interface or something (ngl I'm kinda enjoying this)
 	switch solution {
 	case "1":
 		day1.Solution1(f)
@@ -44,5 +45,8 @@ func main() {
 	case "6":
 		day6.Solution1(f)
 		day6.Solution2(f)
+	case "7":
+		day7.Solution1(f)
+		day7.Solution2(f)
 	}
 }
