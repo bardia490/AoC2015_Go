@@ -19,7 +19,7 @@ type instruction struct {
 // Note: this should only be used when you are sure the number can be
 // converted to uint16 otherwise it will panic
 func convertStringToUint16(num string) uint16 {
-	temp, err := strconv.Atoi(num)
+	temp, err := strconv.ParseUint(num, 10, 16)
 	if err != nil {
 		panic(fmt.Sprintf("there was a error in integer detection, integer: %s aborting operation", num))
 	}
@@ -47,6 +47,9 @@ func ParseInstructions(instructions map[string]instruction, wires map[string]uin
 // process an instruction
 // final is the value at the right hand side
 func ProcessInstruction(instructions map[string]instruction, wires map[string]uint16, in instruction, final string) {
+	if _, ok := wires[final]; ok {
+		return
+	}
 	switch in.operation {
 	case "": // case of [A -> B], in.first == A
 		val := DetermineWire(instructions, wires, in.first)
@@ -111,7 +114,6 @@ func ProcessInstruction(instructions map[string]instruction, wires map[string]ui
 		}
 		wires[final] = val_1 | val_2
 	}
-	delete(instructions, final)
 }
 
 func DetermineWire(instructions map[string]instruction, wires map[string]uint16, wire string) uint16 {
