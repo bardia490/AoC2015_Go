@@ -58,3 +58,13 @@ func Union[T comparable](s1 Set[T], s2 Set[T]) Set[T] {
 	}
 	return result
 }
+
+func (s Set[T]) ToSlice() []T {
+	result := make([]T, s.Len())
+	index := 0
+	for key := range s {
+		result[index] = key
+		index += 1
+	}
+	return result
+}
