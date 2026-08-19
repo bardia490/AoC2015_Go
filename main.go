@@ -2,6 +2,7 @@ package main
 
 import (
 	"Aoc2015/day1"
+	"Aoc2015/day10"
 	"Aoc2015/day2"
 	"Aoc2015/day3"
 	"Aoc2015/day4"
@@ -56,5 +57,8 @@ func main() {
 	case "9":
 		day9.Solution1(f)
 		day9.Solution2(f)
+	case "10":
+		day10.Solution1(f)
+		day10.Solution2(f)
 	}
 }
