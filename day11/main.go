@@ -39,39 +39,48 @@ func correctForbidenPassword(in []byte, index int) {
 
 func checkPassword(in []byte) bool {
 	three_straight_letters := false
-	var last_char byte = 0
-	straight_letters_counter := 1
 
 	var first_pair_character byte = 0
+	var first_pair_found bool = false
 	non_overlapping_pairs := false
 
-	for index, val := range in {
-		if val == 'i' || val == 'o' || val == 'l' {
+	for index := 0; index < len(in)-2; index++ {
+		first := in[index]
+		second := in[index+1]
+		third := in[index+2]
+
+		if first == 'i' || first == 'o' || first == 'l' { // check for forbiden characters
 			correctForbidenPassword(in, index)
 			return false
 		}
-		if !three_straight_letters {
-			//fmt.Println("the letter and the last letter", string(last_char), string(val))
-			if val == last_char+1 {
-				straight_letters_counter++
-				if straight_letters_counter == 3 {
-					three_straight_letters = true
-				}
-			} else { // reset back to zero because they werent back to back
-				//fmt.Println("the letter and the last letter were not back to back", string(last_char), string(val))
-				straight_letters_counter = 1
-			}
-		} // three_straight_letters
+		if second == 'i' || second == 'o' || second == 'l' { // check for forbiden characters
+			correctForbidenPassword(in, index+1)
+			return false
+		}
+		if third == 'i' || third == 'o' || third == 'l' { // check for forbiden characters
+			correctForbidenPassword(in, index+2)
+			return false
+		}
+		if !three_straight_letters && first+1 == second && second+1 == third {
+			three_straight_letters = true
+		}
 		if !non_overlapping_pairs {
-			if val == last_char {
-				if first_pair_character == 0 {
-					first_pair_character = val
-				} else if first_pair_character != val {
+			if first == second {
+				if first_pair_character != first && first_pair_found {
 					non_overlapping_pairs = true
+				} else {
+					first_pair_character = first
+					first_pair_found = true
+				}
+			} else if second == third {
+				if first_pair_character != second && first_pair_found {
+					non_overlapping_pairs = true
+				} else {
+					first_pair_character = second
+					first_pair_found = true
 				}
 			}
-		} // end of non_overlapping_pairs check
-		last_char = val
+		}
 	}
 	return non_overlapping_pairs && three_straight_letters
 }
@@ -93,7 +102,7 @@ func Solution1(f *os.File) {
 		panic(fmt.Sprintf("there was a problem reading the file: %s", err.Error()))
 	}
 
-	fmt.Println("the solution to day10 part 1 is:", new_pass)
+	fmt.Println("the solution to day11 part 1 is:", new_pass)
 	f.Seek(0, io.SeekStart)
 }
 
@@ -110,5 +119,5 @@ func Solution2(f *os.File) {
 		panic(fmt.Sprintf("there was a problem reading the file: %s", err.Error()))
 	}
 
-	fmt.Println("the solution to day10 part 2 is:", new_pass)
+	fmt.Println("the solution to day11 part 2 is:", new_pass)
 }
