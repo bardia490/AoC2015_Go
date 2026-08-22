@@ -7,7 +7,9 @@ import (
 	"os"
 )
 
-func countNumbers(in []byte, solution_number int) (float64, error) {
+// calculates the sum of the numbers in the json file
+// the error is for when the json data is corrupted and cannot be parsed correctly
+func sumNumbers(in []byte, solution_number int) (float64, error) {
 	var f any
 
 	err := json.Unmarshal(in, &f)
@@ -15,69 +17,30 @@ func countNumbers(in []byte, solution_number int) (float64, error) {
 		return 0, err
 	}
 	if solution_number == 1 {
-		return countMaps(f.(map[string]any)), nil
+		return sumMaps(f.(map[string]any)), nil
 	}
-	return countMaps(f.(map[string]any)), nil
+	return sumMaps2(f.(map[string]any)), nil
 }
 
-func scanForRedInMaps(m map[string]any) bool {
-	for k, v := range m {
-		if k == "red" {
-			return true
-		}
-		switch vv := v.(type) {
-		case []any:
-			if scanForRedInArrays(vv) {
-				return true
-			}
-		case map[string]any:
-			if scanForRedInMaps(vv) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func scanForRedInArrays(m []any) bool {
-	for _, v := range m {
-		switch vv := v.(type) {
-		case []any: // i need to think more about this one
-			if scanForRedInArrays(vv) {
-				return true
-			}
-		case map[string]any:
-			if scanForRedInMaps(vv) {
-				return true
-			}
-		}
-	}
-	return true
-}
-
-func countMaps(m map[string]any) float64 {
+// sums the numbers it finds in the json (which is in map[string]any format)
+func sumMaps(m map[string]any) float64 {
 	var result float64 = 0
 
-	for k, v := range m {
+	for _, v := range m {
 		switch vv := v.(type) {
-		//case int:
-		//	fmt.Println(k, "is int", vv)
-		//	result += vv
 		case float64:
-			fmt.Println(k, "is float64", vv)
 			result += vv
 		case []any:
-			//fmt.Println(k, "is an array:")
-			result += countArrays(vv)
+			result += sumArrays(vv)
 		case map[string]any:
-			//fmt.Println(k, "is an object:")
-			result += countMaps(vv)
+			result += sumMaps(vv)
 		}
 	}
 	return result
 }
 
-func countArrays(m []any) float64 {
+// sums the numbers it finds in the json (which is in []any format)
+func sumArrays(m []any) float64 {
 	var result float64 = 0
 
 	for _, v := range m {
@@ -85,11 +48,49 @@ func countArrays(m []any) float64 {
 		case float64:
 			result += vv
 		case []any:
-			//fmt.Println(k, "is an array:")
-			result += countArrays(vv)
+			result += sumArrays(vv)
 		case map[string]any:
-			//fmt.Println(k, "is an object:")
-			result += countMaps(vv)
+			result += sumMaps(vv)
+		}
+	}
+	return result
+}
+
+// sums the numbers it finds in the json (which is in map[string]any format)
+// excluding the objects that hold any property with the value "red"
+func sumMaps2(m map[string]any) float64 {
+	var result float64 = 0
+
+	for _, v := range m {
+		switch vv := v.(type) {
+		case string:
+			if vv == "red" {
+				return 0
+			}
+		case float64:
+			result += vv
+		case []any:
+			result += sumArrays2(vv)
+		case map[string]any:
+			result += sumMaps2(vv)
+		}
+	}
+	return result
+}
+
+// sums the numbers it finds in the json (which is in []any format)
+// excluding the objects that hold any property with the value "red"
+func sumArrays2(m []any) float64 {
+	var result float64 = 0
+
+	for _, v := range m {
+		switch vv := v.(type) {
+		case float64:
+			result += vv
+		case []any:
+			result += sumArrays2(vv)
+		case map[string]any:
+			result += sumMaps2(vv)
 		}
 	}
 	return result
@@ -102,7 +103,7 @@ func Solution1(f *os.File) {
 		return
 	}
 	var result float64 = 0
-	result, err = countNumbers(contents, 1)
+	result, err = sumNumbers(contents, 1)
 	if err != nil {
 		fmt.Println("something went wrong with parsing the json: ", err.Error())
 	}
@@ -119,7 +120,7 @@ func Solution2(f *os.File) {
 		return
 	}
 	var result float64 = 0
-	result, err = countNumbers(contents, 2)
+	result, err = sumNumbers(contents, 2)
 	if err != nil {
 		fmt.Println("something went wrong with parsing the json: ", err.Error())
 	}
