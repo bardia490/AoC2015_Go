@@ -64,7 +64,6 @@ func Solution1(f *os.File) {
 			maximum = result
 		}
 	}
-	//fmt.Println("map: :", happiness_diagram, "people:", people, "len(map): :", len(happiness_diagram), "len(people):", len(people))
 	fmt.Println("the solution to day13 part 1 is:", maximum)
 	f.Seek(0, io.SeekStart)
 }
