@@ -100,3 +100,9 @@ func Factorial(num uint64) uint64 {
 	}
 	return result
 }
+
+// generic Optional value
+type Option[T any] struct {
+	value T
+	ok    bool
+}

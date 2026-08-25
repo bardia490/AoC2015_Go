@@ -139,7 +139,6 @@ func Solution1(f *os.File) {
 		}
 		index += 1
 	}
-	fmt.Println(ingredients)
 	result := part1(ingredients[:])
 
 	if err := sc.Err(); err != nil {
