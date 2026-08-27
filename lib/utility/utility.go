@@ -106,3 +106,31 @@ type Option[T any] struct {
 	value T
 	ok    bool
 }
+
+type Number interface {
+	int | int64 | int32 | float64 | float32
+}
+
+func SumSlice[T Number](values []T) T {
+	var result T = 0
+	for _, value := range values {
+		result += value
+	}
+	return result
+}
+
+func GenerateSubsets[T any](set []T) iter.Seq[[]T] {
+	return generateSubsetsAux([]T{}, set)
+}
+
+func generateSubsetsAux[T any](current []T, rest []T) iter.Seq[[]T] {
+	return func(yield func([]T) bool) {
+		for index, elem := range rest {
+			new := append(current, elem)
+			if !yield(new) {
+				return
+			}
+			generateSubsetsAux(new, rest[index+1:])(yield)
+		}
+	}
+}
