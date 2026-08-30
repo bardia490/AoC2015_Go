@@ -11,6 +11,7 @@ import (
 	"Aoc2015/day16"
 	"Aoc2015/day17"
 	"Aoc2015/day18"
+	"Aoc2015/day19"
 	"Aoc2015/day2"
 	"Aoc2015/day3"
 	"Aoc2015/day4"
@@ -92,5 +93,8 @@ func main() {
 	case "18":
 		day18.Solution1(f)
 		day18.Solution2(f)
+	case "19":
+		day19.Solution1(f)
+		day19.Solution2(f)
 	}
 }
