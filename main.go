@@ -98,7 +98,7 @@ func main() {
 		day19.Solution1(f)
 		day19.Solution2(f)
 	case "20":
-		//day20.Solution1(f)
+		day20.Solution1(f)
 		day20.Solution2(f)
 	}
 }

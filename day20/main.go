@@ -64,21 +64,17 @@ func part2(target int) (house_number int) {
 			break
 		}
 		initial_guess += 50
-		//fmt.Println("house:", initial_guess, "presents:", presents)
 	}
 
 	lowest_house_number := initial_guess
 
-	// probe the last 50 houses to find the lowest one (just in case there is something lower that we missed in the above loop)
+	// probe the last 100 houses to find the lowest one (just in case there is something lower that we missed in the above loop)
 	for guess := initial_guess; guess > initial_guess-100; guess-- {
 		presents := calcHousePresents2(guess)
 		if presents >= target && lowest_house_number > guess {
-			//fmt.Println("house:", guess, "presents:", presents)
 			lowest_house_number = guess
 		}
 	}
-	presents := calcHousePresents2(lowest_house_number)
-	fmt.Println("house:", lowest_house_number, "presents:", presents)
 	return lowest_house_number
 }
 
