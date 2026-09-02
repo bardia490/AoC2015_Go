@@ -44,7 +44,7 @@ func Solution1(f *os.File) {
 
 	minimum := math.MaxInt
 
-	for permutation := range utility.Generate(cities.ToSlice()) {
+	for permutation := range utility.GeneratePermutations(cities.ToSlice()) {
 		result := 0
 		for index := 0; index < len(permutation)-1; index += 1 {
 			key := [2]string{permutation[index], permutation[index+1]}
@@ -81,7 +81,7 @@ func Solution2(f *os.File) {
 
 	maximum := 0
 
-	for permutation := range utility.Generate(cities.ToSlice()) {
+	for permutation := range utility.GeneratePermutations(cities.ToSlice()) {
 		result := 0
 		for index := 0; index < len(permutation)-1; index += 1 {
 			key := [2]string{permutation[index], permutation[index+1]}

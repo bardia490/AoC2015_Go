@@ -52,7 +52,7 @@ func Solution1(f *os.File) {
 	}
 
 	maximum := math.MinInt
-	for permutation := range utility.Generate(people.ToSlice()) { // generate the permutation of peoples names
+	for permutation := range utility.GeneratePermutations(people.ToSlice()) { // generate the permutation of peoples names
 		result := 0
 		for index := 0; index < len(permutation)-1; index += 1 {
 			result += happiness_diagram[[2]string{permutation[index], permutation[index+1]}]
@@ -87,7 +87,7 @@ func Solution2(f *os.File) {
 
 	maximum := math.MinInt
 
-	for permutation := range utility.Generate(people.ToSlice()) {
+	for permutation := range utility.GeneratePermutations(people.ToSlice()) {
 		result := 0
 		for index := 0; index < len(permutation)-1; index += 1 {
 			result += happiness_diagram[[2]string{permutation[index], permutation[index+1]}]

@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"io"
 	"iter"
+	"math"
 )
 
 // Source - https://stackoverflow.com/a/52153000
@@ -41,7 +42,7 @@ func LineCounter(r io.Reader) (int, error) {
 }
 
 // Heap's algorithm
-func Generate[T any](input []T) iter.Seq[[]T] {
+func GeneratePermutations[T any](input []T) iter.Seq[[]T] {
 	return func(yield func([]T) bool) {
 		// Work on a copy so generating permutations does not modify input.
 		items := append([]T(nil), input...)
@@ -133,4 +134,60 @@ func generateSubsetsAux[T any](current []T, rest []T) iter.Seq[[]T] {
 			generateSubsetsAux(new, rest[index+1:])(yield)
 		}
 	}
+}
+
+// e.g. GenerateNumberDivisors(8) => 1, 2, 4, 8
+func GenerateNumberDivisors(num int) iter.Seq[int] {
+	return func(yield func(int) bool) {
+		if num <= 0 {
+			return
+		}
+
+		num_sqrt := int(math.Sqrt(float64(num))) + 1
+		for n := 1; n < num_sqrt; n++ {
+			if num%n == 0 {
+				if !yield(n) {
+					return
+				}
+				other_divisor := num / n
+				if n != other_divisor {
+					if !yield(other_divisor) {
+						return
+					}
+				}
+			}
+		}
+
+		//if !yield(num) {
+		//	return
+		//}
+	}
+}
+
+// this is slower than the GenerateNumberDivisors but will return the numbers sequentually
+func GenerateNumberDivisorsSorted(num int) iter.Seq[int] {
+	return func(yield func(int) bool) {
+		if num <= 0 {
+			return
+		}
+
+		half_num := num / 2
+		for n := 1; n < half_num; n++ {
+			if num%n == 0 {
+				if !yield(n) {
+					return
+				}
+			}
+		}
+
+		if !yield(num) {
+			return
+		}
+	}
+}
+func Abs[T Number](num1 T) T {
+	if num1 >= 0 {
+		return num1
+	}
+	return -num1
 }
