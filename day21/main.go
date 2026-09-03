@@ -3,10 +3,11 @@ package day21
 import (
 	"Aoc2015/lib/utility"
 	"bufio"
+	"bytes"
 	"fmt"
-	"io"
 	"math"
 	"os"
+	"strconv"
 )
 
 type Item struct {
@@ -49,9 +50,25 @@ type Boss struct {
 }
 
 var boss = Boss{
-	health: 109,
-	damage: 8,
-	armor:  2,
+	health: 0,
+	damage: 0,
+	armor:  0,
+}
+
+func setBossStats(in []byte) (parsing_error error) {
+	contents := bytes.Split(in, []byte(": "))
+	val, err := strconv.Atoi(string(contents[1]))
+	if err != nil {
+		return err
+	}
+	if bytes.Equal(contents[0], []byte("Hit Points")) {
+		boss.health = val
+	} else if bytes.Equal(contents[0], []byte("Damage")) {
+		boss.damage = val
+	} else if bytes.Equal(contents[0], []byte("Armor")) {
+		boss.armor = val
+	}
+	return nil
 }
 
 // return true if the player wins based on the players stats
@@ -138,13 +155,11 @@ func part2() int {
 func Solution1(f *os.File) {
 	sc := bufio.NewScanner(f)
 
-	index := 0
 	for sc.Scan() {
 		line := sc.Bytes()
-		if len(line) == 0 {
-			break
+		if err := setBossStats(line); err != nil {
+			fmt.Println("problem parsing the stat:", err.Error())
 		}
-		index += 1
 	}
 	result := part1()
 
@@ -153,26 +168,11 @@ func Solution1(f *os.File) {
 	}
 
 	fmt.Println("the solution to day21 part 1 is:", result)
-	f.Seek(0, io.SeekStart)
 }
 
 func Solution2(f *os.File) {
-	sc := bufio.NewScanner(f)
-
-	index := 0
-	for sc.Scan() {
-		line := sc.Bytes()
-		if len(line) == 0 {
-			break
-		}
-		index += 1
-	}
-	//result := 0
+	// we don't even need to parse the file again since the boss is a global variable
 	result := part2()
-
-	if err := sc.Err(); err != nil {
-		panic(fmt.Sprintf("there was a problem reading the file: %s", err.Error()))
-	}
 
 	fmt.Println("the solution to day21 part 2 is:", result)
 }
