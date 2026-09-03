@@ -9,15 +9,6 @@ import (
 	"os"
 )
 
-//func generateDrugsArray(drugs []Drug, in []byte, index int) {
-//	contents := bytes.SplitN(in, []byte(" => "), 2)
-//
-//	drugs[index] = Drug{
-//		initial:     contents[0],
-//		replacement: contents[1],
-//	}
-//}
-
 type Item struct {
 	cost   int
 	damage int
@@ -63,8 +54,8 @@ var boss = Boss{
 	armor:  2,
 }
 
+// return true if the player wins based on the players stats
 func playGame(p_damage, p_armor int) (player_win bool) {
-	player_turn := true
 	player_health := 100
 	boss_damage := boss.damage
 	boss_health := boss.health
@@ -81,22 +72,23 @@ func playGame(p_damage, p_armor int) (player_win bool) {
 		boss_damage -= p_armor
 	}
 
-	for boss_health >= 0 && player_health >= 0 {
-		if player_turn {
-			boss_health -= p_damage
-			player_turn = false
-			continue
-		}
-		player_health -= boss_damage
-		player_turn = true
+	// how many rounds should be played before the player dealts the finishing blow
+	rounds := boss_health / p_damage
+	// update the healths after playing ${rounds} rounds of the game
+	boss_health -= rounds * p_damage
+	player_health -= rounds * boss_damage
+	// check to see if anyone has lost already
+	if player_health <= 0 || boss_health <= 0 {
+		return player_health > 0
 	}
-
-	return player_health > 0
+	// if both have some health left, player will win because it will go first
+	// and it will definitely knock out the boss since there is no more full rounds left
+	return true
 }
 
 func part1() int {
-	// choose a weapon
 	lowest_cost := math.MaxInt
+	// choose a weapon
 	for _, weapon := range weapons {
 		// choose an armor
 		for _, armor := range armors {
@@ -152,7 +144,6 @@ func Solution1(f *os.File) {
 		if len(line) == 0 {
 			break
 		}
-		//generateDrugsArray(drugs[:], line, index)
 		index += 1
 	}
 	result := part1()
@@ -174,7 +165,6 @@ func Solution2(f *os.File) {
 		if len(line) == 0 {
 			break
 		}
-		//generateDrugsArray(drugs[:], line, index)
 		index += 1
 	}
 	//result := 0
