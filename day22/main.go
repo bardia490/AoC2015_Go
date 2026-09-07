@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 )
@@ -80,16 +81,116 @@ var spells = map[spellType]spell{
 	},
 }
 
+type playerStats struct {
+	mana   int
+	health int
+	armor  int
+}
+
+// returns true if the spell is active
+func isSpellActive(s spellType, durations []int) bool {
+	// since there is only three spells active at each round we can just use a simple for loop for searching
+	// 0 => Shield, 1 => Poison, 2 => Recharge
+	switch s {
+	case Shield:
+		return durations[0] != 0
+	case Poison:
+		return durations[1] != 0
+	case Recharge:
+		return durations[2] != 0
+	}
+	return false // this should not happen
+}
+
+// min_mana will updated at the end of every turn and is the answer to the problem
+// duration: shows the time left for every spell, at the begining everything is zero (inactive)
+// 0 => Shield, 1 => Poison, 2 => Recharge
+// p_turn: players turn (true if its the players turn)
+func playGame(p playerStats, b Boss, durations []int, mana_cost int, min_mana *int) {
+	// choose a new effect to start the round
+	for spell_type, spell := range spells {
+		// if it was already active use continue to loop back and choose a new effect
+		if isSpellActive(spell_type, durations) {
+			continue
+		}
+		// add effect to active effects (if necessary)
+		switch spell_type {
+		case Missile:
+			b.health -= 4
+		case Drain:
+			b.health -= 2
+			p.health += 2
+		case Shield:
+			durations[0] = spell.duration
+		case Poison:
+			durations[1] = spell.duration
+		case Recharge:
+			durations[2] = spell.duration
+		}
+		// add the mana cost
+		mana_cost += spell.cost
+		p.mana -= spell.cost
+		// check to see if our mana has depleted or not
+		if p.mana < 1 {
+			return
+		}
+		// check active effects and apply any that are active
+		if durations[0] != 0 {
+			p.armor += spells[Shield].armor
+			durations[0] -= 1
+		}
+		if durations[1] != 0 {
+			b.health -= spells[Poison].damage
+			durations[1] -= 1
+		}
+		if durations[2] != 0 {
+			p.mana += spells[Recharge].manRefill
+			durations[2] -= 1
+		}
+		// if boss is dead update the result variable
+		if b.health < 1 {
+			if mana_cost < *min_mana {
+				*min_mana = mana_cost
+			}
+			return
+		}
+		// the bosses turn
+		if p.armor > b.damage {
+			p.health -= 1
+		} else {
+			p.health -= b.damage - p.armor
+		}
+		// check to see if the player has died
+		if p.health < 1 { // we lost
+			return
+		}
+		// call this function again to proceed to the next state
+		durations_copy := make([]int, len(durations))
+		copy(durations_copy, durations)
+		playGame(p, b, durations_copy, mana_cost, min_mana)
+	}
+}
+
 func part1() int {
-	// start round
-	// check active effects and apply any that are active
-	// choose an effect
-	// if it was already active use continue to loop back and choose a new effect
-	// add effect to active effects (if necessary)
-	// check to see if the player has died, if so then end this round and step back to choose a new effect
-	// if boss is dead update the result variable (which will probably be a pointer)
-	// call this function again to proceed to the next state
-	return 0
+	// initialize player
+	player := playerStats{
+		mana:   250,
+		health: 10,
+		armor:  0,
+	}
+	// initialize the boss
+	boss_clone := Boss{
+		damage: boss.damage,
+		health: boss.health,
+	}
+	min_mana := math.MaxInt
+	// shows the time left for every spell, at the begining everything is zero (inactive)
+	// 0 => Shield, 1 => Poison, 2 => Recharge
+	durations := make([]int, 3)
+	// start game
+	playGame(player, boss_clone, durations, 0, &min_mana)
+
+	return min_mana
 }
 
 func part2() int {
