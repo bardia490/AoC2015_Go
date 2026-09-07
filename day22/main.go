@@ -174,8 +174,27 @@ func playGame(p playerStats, b Boss, durations []int, mana_cost int, min_mana *i
 		}
 		// the bosses turn
 		effective_armor := 0
-		if durations_copy[0] > 0 {
+		if durations_copy[0] > 0 { // Shield
 			effective_armor = spells[Shield].armor
+			durations_copy[0]--
+		}
+
+		if durations_copy[1] > 0 { // Poison
+			next_b.health -= spells[Poison].damage
+			durations_copy[1]--
+		}
+
+		if durations_copy[2] > 0 { // Recharge
+			next_p.mana += spells[Recharge].manaRefill
+			durations_copy[2]--
+		}
+
+		// ۲. بررسی مرگ باس از Poison در نوبت باس
+		if next_b.health < 1 {
+			if next_mana_cost < *min_mana {
+				*min_mana = next_mana_cost
+			}
+			continue // نیازی به ادامه نوبت باس نیست، رفتن به اسپل بعدی
 		}
 		next_p.health -= max(b.damage-effective_armor, 1)
 		// check to see if the player has died
@@ -184,6 +203,113 @@ func playGame(p playerStats, b Boss, durations []int, mana_cost int, min_mana *i
 		}
 		// call this function again to proceed to the next state
 		playGame(next_p, next_b, durations_copy, next_mana_cost, min_mana)
+	}
+}
+
+// min_mana will updated at the end of every turn and is the answer to the problem
+// duration: shows the time left for every spell, at the begining everything is zero (inactive)
+// 0 => Shield, 1 => Poison, 2 => Recharge
+// the same thing as part1 but the player takes damage at the start of each round
+func playGame2(p playerStats, b Boss, durations []int, mana_cost int, min_mana *int) {
+	//Stop if we are already worse than the best
+	if mana_cost >= *min_mana {
+		return
+	}
+	//player takes damage at the start of each round
+	p.health -= 1
+	if p.health < 1 {
+		return
+	}
+	// check active effects and apply any that are active
+	if durations[0] != 0 {
+		p.armor = spells[Shield].armor
+		durations[0] -= 1
+		if durations[0] == 0 {
+			p.armor = 0
+		}
+	}
+	if durations[1] != 0 {
+		b.health -= spells[Poison].damage
+		durations[1] -= 1
+	}
+	if durations[2] != 0 {
+		p.mana += spells[Recharge].manaRefill
+		durations[2] -= 1
+	}
+	// if boss is dead update the result variable
+	if b.health < 1 {
+		if mana_cost < *min_mana {
+			*min_mana = mana_cost
+		}
+		return
+	}
+	// choose a new effect to start the round
+	for spell_type, spell := range spells {
+		durations_copy := make([]int, len(durations))
+		copy(durations_copy, durations)
+		// if it was already active use continue to loop back and choose a new effect
+		if isSpellActive(spell_type, durations_copy) {
+			continue
+		}
+		// add the mana cost
+		if p.mana < spell.cost {
+			continue
+		}
+		next_mana_cost := mana_cost + spell.cost
+		next_p := p
+		next_p.mana -= spell.cost
+		next_b := b
+		// add effect to active effects (if necessary)
+		switch spell_type {
+		case Missile:
+			next_b.health -= 4
+		case Drain:
+			next_b.health -= spell.damage
+			next_p.health += spell.heal
+		case Shield:
+			durations_copy[0] = spell.duration
+		case Poison:
+			durations_copy[1] = spell.duration
+		case Recharge:
+			durations_copy[2] = spell.duration
+		}
+		// if boss is dead update the result variable
+		if next_b.health < 1 {
+			if next_mana_cost < *min_mana {
+				*min_mana = next_mana_cost
+			}
+			return
+		}
+		// the bosses turn
+		effective_armor := 0
+		if durations_copy[0] > 0 { // Shield
+			effective_armor = spells[Shield].armor
+			durations_copy[0]--
+		}
+
+		if durations_copy[1] > 0 { // Poison
+			next_b.health -= spells[Poison].damage
+			durations_copy[1]--
+		}
+
+		if durations_copy[2] > 0 {
+			next_p.mana += spells[Recharge].manaRefill
+			durations_copy[2]--
+		}
+
+		if next_b.health < 1 {
+			if next_mana_cost < *min_mana {
+				*min_mana = next_mana_cost
+			}
+			continue
+		}
+		next_p.health -= max(b.damage-effective_armor, 1)
+		// check to see if the player has died
+		if next_p.health < 1 { // we lost
+			return
+		}
+		// call this function again to proceed to the next state
+		playGame2(next_p, next_b, durations_copy, next_mana_cost, min_mana)
 	}
 }
 
@@ -210,7 +336,25 @@ func part1() int {
 }
 
 func part2() int {
-	return 0
+	// initialize player
+	player := playerStats{
+		mana:   500,
+		health: 50,
+		armor:  0,
+	}
+	// initialize the boss
+	boss_clone := Boss{
+		damage: boss.damage,
+		health: boss.health,
+	}
+	min_mana := math.MaxInt
+	// shows the time left for every spell, at the begining everything is zero (inactive)
+	// 0 => Shield, 1 => Poison, 2 => Recharge
+	durations := make([]int, 3)
+	// start game
+	playGame2(player, boss_clone, durations, 0, &min_mana)
+
+	return min_mana
 }
 
 func Solution1(f *os.File) {
@@ -228,7 +372,7 @@ func Solution1(f *os.File) {
 		panic(fmt.Sprintf("there was a problem reading the file: %s", err.Error()))
 	}
 
-	fmt.Println("the solution to day21 part 1 is:", result, math.MaxInt)
+	fmt.Println("the solution to day21 part 1 is:", result)
 }
 
 func Solution2(f *os.File) {
