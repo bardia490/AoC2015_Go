@@ -38,20 +38,20 @@ func setBossStats(in []byte) (parsing_error error) {
 type spellType int
 
 const (
-	Missile spellType = iota
-	Drain
-	Shield
+	Shield spellType = iota
 	Poison
 	Recharge
+	Missile
+	Drain
 )
 
 type spell struct {
-	cost      int
-	duration  int
-	damage    int
-	heal      int
-	armor     int
-	manRefill int
+	cost       int
+	duration   int
+	damage     int
+	heal       int
+	armor      int
+	manaRefill int
 }
 
 var spells = map[spellType]spell{
@@ -75,9 +75,9 @@ var spells = map[spellType]spell{
 		damage:   3,
 	},
 	Recharge: {
-		cost:      229,
-		duration:  5,
-		manRefill: 101,
+		cost:       229,
+		duration:   5,
+		manaRefill: 101,
 	},
 }
 
@@ -93,11 +93,11 @@ func isSpellActive(s spellType, durations []int) bool {
 	// 0 => Shield, 1 => Poison, 2 => Recharge
 	switch s {
 	case Shield:
-		return durations[0] != 0
+		return durations[0] > 0
 	case Poison:
-		return durations[1] != 0
+		return durations[1] > 0
 	case Recharge:
-		return durations[2] != 0
+		return durations[2] > 0
 	}
 	return false // this should not happen
 }
@@ -105,21 +105,53 @@ func isSpellActive(s spellType, durations []int) bool {
 // min_mana will updated at the end of every turn and is the answer to the problem
 // duration: shows the time left for every spell, at the begining everything is zero (inactive)
 // 0 => Shield, 1 => Poison, 2 => Recharge
-// p_turn: players turn (true if its the players turn)
 func playGame(p playerStats, b Boss, durations []int, mana_cost int, min_mana *int) {
+	//Stop if we are already worse than the best
+	if mana_cost >= *min_mana {
+		return
+	}
+	// check active effects and apply any that are active
+	if durations[0] != 0 {
+		p.armor = spells[Shield].armor
+		durations[0] -= 1
+		if durations[0] == 0 {
+			p.armor = 0
+		}
+	}
+	if durations[1] != 0 {
+		b.health -= spells[Poison].damage
+		durations[1] -= 1
+	}
+	if durations[2] != 0 {
+		p.mana += spells[Recharge].manaRefill
+		durations[2] -= 1
+	}
+	// if boss is dead update the result variable
+	if b.health < 1 {
+		if mana_cost < *min_mana {
+			*min_mana = mana_cost
+		}
+		return
+	}
 	// choose a new effect to start the round
 	for spell_type, spell := range spells {
 		// if it was already active use continue to loop back and choose a new effect
 		if isSpellActive(spell_type, durations) {
 			continue
 		}
+		// add the mana cost
+		if p.mana < spell.cost {
+			continue
+		}
+		mana_cost += spell.cost
+		p.mana -= spell.cost
 		// add effect to active effects (if necessary)
 		switch spell_type {
 		case Missile:
 			b.health -= 4
 		case Drain:
-			b.health -= 2
-			p.health += 2
+			b.health -= spell.damage
+			p.health += spell.heal
 		case Shield:
 			durations[0] = spell.duration
 		case Poison:
@@ -127,39 +159,8 @@ func playGame(p playerStats, b Boss, durations []int, mana_cost int, min_mana *i
 		case Recharge:
 			durations[2] = spell.duration
 		}
-		// add the mana cost
-		mana_cost += spell.cost
-		p.mana -= spell.cost
-		// check to see if our mana has depleted or not
-		if p.mana < 1 {
-			return
-		}
-		// check active effects and apply any that are active
-		if durations[0] != 0 {
-			p.armor += spells[Shield].armor
-			durations[0] -= 1
-		}
-		if durations[1] != 0 {
-			b.health -= spells[Poison].damage
-			durations[1] -= 1
-		}
-		if durations[2] != 0 {
-			p.mana += spells[Recharge].manRefill
-			durations[2] -= 1
-		}
-		// if boss is dead update the result variable
-		if b.health < 1 {
-			if mana_cost < *min_mana {
-				*min_mana = mana_cost
-			}
-			return
-		}
 		// the bosses turn
-		if p.armor > b.damage {
-			p.health -= 1
-		} else {
-			p.health -= b.damage - p.armor
-		}
+		p.health -= max(b.damage-p.armor, 1)
 		// check to see if the player has died
 		if p.health < 1 { // we lost
 			return
@@ -212,7 +213,7 @@ func Solution1(f *os.File) {
 		panic(fmt.Sprintf("there was a problem reading the file: %s", err.Error()))
 	}
 
-	fmt.Println("the solution to day21 part 1 is:", result)
+	fmt.Println("the solution to day21 part 1 is:", result, math.MaxInt)
 }
 
 func Solution2(f *os.File) {
