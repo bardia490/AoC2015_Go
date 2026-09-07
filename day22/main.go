@@ -135,48 +135,63 @@ func playGame(p playerStats, b Boss, durations []int, mana_cost int, min_mana *i
 	}
 	// choose a new effect to start the round
 	for spell_type, spell := range spells {
+		durations_copy := make([]int, len(durations))
+		copy(durations_copy, durations)
 		// if it was already active use continue to loop back and choose a new effect
-		if isSpellActive(spell_type, durations) {
+		if isSpellActive(spell_type, durations_copy) {
 			continue
 		}
 		// add the mana cost
 		if p.mana < spell.cost {
 			continue
 		}
-		mana_cost += spell.cost
-		p.mana -= spell.cost
+		next_mana_cost := mana_cost + spell.cost
+		next_p := p
+		next_p.mana -= spell.cost
+		next_b := b
+		//mana_cost += spell.cost
+		//p.mana -= spell.cost
 		// add effect to active effects (if necessary)
 		switch spell_type {
 		case Missile:
-			b.health -= 4
+			next_b.health -= 4
 		case Drain:
-			b.health -= spell.damage
-			p.health += spell.heal
+			next_b.health -= spell.damage
+			next_p.health += spell.heal
 		case Shield:
-			durations[0] = spell.duration
+			durations_copy[0] = spell.duration
 		case Poison:
-			durations[1] = spell.duration
+			durations_copy[1] = spell.duration
 		case Recharge:
-			durations[2] = spell.duration
+			durations_copy[2] = spell.duration
+		}
+		// if boss is dead update the result variable
+		if next_b.health < 1 {
+			if next_mana_cost < *min_mana {
+				*min_mana = next_mana_cost
+			}
+			return
 		}
 		// the bosses turn
-		p.health -= max(b.damage-p.armor, 1)
+		effective_armor := 0
+		if durations_copy[0] > 0 {
+			effective_armor = spells[Shield].armor
+		}
+		next_p.health -= max(b.damage-effective_armor, 1)
 		// check to see if the player has died
-		if p.health < 1 { // we lost
+		if next_p.health < 1 { // we lost
 			return
 		}
 		// call this function again to proceed to the next state
-		durations_copy := make([]int, len(durations))
-		copy(durations_copy, durations)
-		playGame(p, b, durations_copy, mana_cost, min_mana)
+		playGame(next_p, next_b, durations_copy, next_mana_cost, min_mana)
 	}
 }
 
 func part1() int {
 	// initialize player
 	player := playerStats{
-		mana:   250,
-		health: 10,
+		mana:   500,
+		health: 50,
 		armor:  0,
 	}
 	// initialize the boss
