@@ -1,5 +1,7 @@
 package day22
 
+// I should try Dijkstra's algorithm
+
 import (
 	"bufio"
 	"bytes"
@@ -149,8 +151,6 @@ func playGame(p playerStats, b Boss, durations []int, mana_cost int, min_mana *i
 		next_p := p
 		next_p.mana -= spell.cost
 		next_b := b
-		//mana_cost += spell.cost
-		//p.mana -= spell.cost
 		// add effect to active effects (if necessary)
 		switch spell_type {
 		case Missile:
@@ -189,12 +189,11 @@ func playGame(p playerStats, b Boss, durations []int, mana_cost int, min_mana *i
 			durations_copy[2]--
 		}
 
-		// ۲. بررسی مرگ باس از Poison در نوبت باس
 		if next_b.health < 1 {
 			if next_mana_cost < *min_mana {
 				*min_mana = next_mana_cost
 			}
-			continue // نیازی به ادامه نوبت باس نیست، رفتن به اسپل بعدی
+			continue
 		}
 		next_p.health -= max(b.damage-effective_armor, 1)
 		// check to see if the player has died

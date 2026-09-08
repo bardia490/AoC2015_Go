@@ -3,6 +3,7 @@ package utility
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"io"
 	"iter"
 	"math"
@@ -190,4 +191,40 @@ func Abs[T Number](num1 T) T {
 		return num1
 	}
 	return -num1
+}
+
+// converts bytes to integerts
+// returns error in case of empty slice
+// returns error in case one of the components isn't a correct ascii character
+// numbers can have one minus or one plus behind them (e.g +23, -5)
+func BytesToIntSigned(s []byte) (int, error) {
+	if len(s) == 0 {
+		return 0, fmt.Errorf("length of the slice was empty, conversion faild")
+	}
+
+	sign := 1
+	i := 0
+	switch s[0] {
+	case '-':
+		sign = -1
+		i = 1
+		if len(s) == 1 {
+			return 0, fmt.Errorf("length of the slice was empty, conversion faild")
+		}
+	case '+':
+		i = 1
+		if len(s) == 1 {
+			return 0, fmt.Errorf("length of the slice was empty, conversion faild")
+		}
+	}
+
+	n := 0
+	for ; i < len(s); i++ {
+		c := s[i]
+		if c < '0' || c > '9' {
+			return 0, fmt.Errorf("could not convert character to integer: %c", c)
+		}
+		n = n*10 + int(c-'0')
+	}
+	return sign * n, nil
 }
