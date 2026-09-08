@@ -19,13 +19,13 @@ const (
 	jio
 )
 
-type tokens struct {
+type token struct {
 	inst     instruction
 	value    int
 	variable string // for instructions such as inc or jio or jie
 }
 
-func setInstructions(in []byte, instructions []tokens, index int) (parsing_error error) {
+func setInstructions(in []byte, instructions []token, index int) (parsing_error error) {
 	contents := bytes.Split(in, []byte(" "))
 
 	if bytes.Equal(contents[0], []byte("hlf")) {
@@ -66,11 +66,65 @@ func setInstructions(in []byte, instructions []tokens, index int) (parsing_error
 	return nil
 }
 
-func part1(instructions []tokens) int {
-	for index, ins := range instructions {
-		fmt.Println(index, ins.value)
+func runInstruction(instruction token, a, b, instruction_number *int) {
+	//fmt.Println(instruction, instruction.inst == jio)
+	//panic("because i can")
+	switch instruction.inst {
+	case hlf:
+		if instruction.variable == "a" {
+			*a /= 2
+		} else {
+			*b /= 2
+		}
+		*instruction_number = *instruction_number + 1
+	case tpl:
+		if instruction.variable == "a" {
+			*a *= 3
+		} else {
+			*b *= 3
+		}
+		*instruction_number += 1
+	case inc:
+		if instruction.variable == "a" {
+			*a += 1
+		} else {
+			*b += 1
+		}
+		*instruction_number += 1
+	case jmp:
+		fmt.Println("going to jump", instruction.value)
+		*instruction_number += instruction.value
+	case jie: //even
+		if instruction.variable == "a" && *a%2 == 0 {
+			*instruction_number += instruction.value
+		} else if instruction.variable == "b" && *b%2 == 0 {
+			*instruction_number += instruction.value
+		} else {
+			*instruction_number += 1
+		}
+	case jio: // odd
+		if instruction.variable == "a" && *a%2 != 0 {
+			*instruction_number += instruction.value
+		} else if instruction.variable == "b" && *b%2 != 0 {
+			*instruction_number += instruction.value
+		} else {
+			*instruction_number += 1
+		}
 	}
-	return 0
+}
+
+func part1(instructions []token) int {
+	len_instructions := len(instructions)
+	instruction_number := 0
+	a := 0
+	b := 0
+
+	for instruction_number < len_instructions {
+		//fmt.Println("before:", instruction_number)
+		runInstruction(instructions[instruction_number], &a, &b, &instruction_number)
+		//fmt.Println("after:", instruction_number)
+	}
+	return b
 }
 
 func part2() int {
@@ -80,12 +134,11 @@ func part2() int {
 func Solution1(f *os.File) {
 	sc := bufio.NewScanner(f)
 	index := 0
-	instructions := make([]tokens, 49)
+	instructions := make([]token, 49)
 
 	for sc.Scan() {
 		line := sc.Bytes()
 		_ = line
-		fmt.Println(string(line))
 		if err := setInstructions(line, instructions, index); err != nil {
 			fmt.Println("problem parsing the stat:", err.Error())
 			return
@@ -98,12 +151,12 @@ func Solution1(f *os.File) {
 		panic(fmt.Sprintf("there was a problem reading the file: %s", err.Error()))
 	}
 
-	fmt.Println("the solution to day21 part 1 is:", result)
+	fmt.Println("the solution to day23 part 1 is:", result)
 }
 
 func Solution2(f *os.File) {
 	// we don't even need to parse the file again since the boss is a global variable
 	result := part2()
 
-	fmt.Println("the solution to day21 part 2 is:", result)
+	fmt.Println("the solution to day23 part 2 is:", result)
 }
