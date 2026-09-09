@@ -43,6 +43,9 @@ func LineCounter(r io.Reader) (int, error) {
 }
 
 // Heap's algorithm
+// this algorithm works creates a copy of the original input
+// hence it does not modify the original input slice and the slice
+// can be used everywhere else
 func GeneratePermutations[T any](input []T) iter.Seq[[]T] {
 	return func(yield func([]T) bool) {
 		// Work on a copy so generating permutations does not modify input.
