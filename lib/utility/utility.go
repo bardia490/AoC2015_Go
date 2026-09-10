@@ -124,20 +124,84 @@ func SumSlice[T Number](values []T) T {
 	return result
 }
 
+// generates all the subsets of an slice in a non deterministic order
 func GenerateSubsets[T any](set []T) iter.Seq[[]T] {
-	return generateSubsetsAux([]T{}, set)
+	return auxGenerateSubsets([]T{}, set)
 }
 
-func generateSubsetsAux[T any](current []T, rest []T) iter.Seq[[]T] {
+func auxGenerateSubsets[T any](current []T, rest []T) iter.Seq[[]T] {
 	return func(yield func([]T) bool) {
 		for index, elem := range rest {
 			new := append(current, elem)
 			if !yield(new) {
 				return
 			}
-			generateSubsetsAux(new, rest[index+1:])(yield)
+			auxGenerateSubsets(new, rest[index+1:])(yield)
 		}
 	}
+}
+
+// advance index
+func auxGenerateSubsetsNAdvanceIndex(current_indexes []int, max_index int) bool {
+	last_index := len(current_indexes) - 2 // take the element one from the last
+	movement := 0
+	for last_index > -1 {
+		if current_indexes[last_index] < max_index-movement-1 {
+			current_indexes[last_index] += 1
+			break
+		}
+		last_index--
+		movement += 1
+	}
+	// if we the last_index was less than zero means we have reached the end of the array
+	if last_index < 0 {
+		return false
+	}
+	for ; last_index < len(current_indexes)-1; last_index++ {
+		current_indexes[last_index+1] = current_indexes[last_index] + 1
+	}
+	return true
+}
+
+// copies the elements from array [source] to [dest] with specified indexes from [indexes]
+// panics if any index is out of bounds in either array
+func CopyWithIndexes[T any](dest, source []T, indexes []int) {
+	for dest_index, source_index := range indexes {
+		dest[dest_index] = source[source_index]
+	}
+}
+
+// count is the number of elements in each subset
+// error will probably be removed in the future
+func GenerateSubsetsN[T any](set []T, count int) (iter.Seq[[]T], error) {
+	if count < 2 {
+		return nil, fmt.Errorf("length of the subset cannot be less than 2")
+	}
+	// set up the place-holder array
+	subset := make([]T, count)
+	// set up an array for keep track of the current indexes, initially it holds the indexes from 0 to N-2
+	current_indexes := make([]int, count)
+	// fill the place holder with the first batch of [set[0], set[1], ..., set[N-2]]
+	for index := range count {
+		current_indexes[index] = index
+	}
+	// for the first iteration of the for loop we need to decrement the last index
+	current_indexes[count-2] -= 1
+	// to keep track of the last spot in the subset array
+	last_index := count - 1
+	number_of_elements := len(set)
+
+	return func(yield func([]T) bool) {
+		for auxGenerateSubsetsNAdvanceIndex(current_indexes, number_of_elements-1) {
+			CopyWithIndexes(subset, set, current_indexes)
+			for loop_index := current_indexes[last_index]; loop_index < number_of_elements; loop_index++ {
+				subset[last_index] = set[loop_index]
+				if !yield(subset) {
+					return
+				}
+			}
+		}
+	}, nil
 }
 
 // e.g. GenerateNumberDivisors(8) => 1, 2, 4, 8
@@ -189,6 +253,7 @@ func GenerateNumberDivisorsSorted(num int) iter.Seq[int] {
 		}
 	}
 }
+
 func Abs[T Number](num1 T) T {
 	if num1 >= 0 {
 		return num1
