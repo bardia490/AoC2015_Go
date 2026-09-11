@@ -20,7 +20,7 @@ func setWeights(in []byte, weights []int, index int) (parsing_error error) {
 var weights = make([]int, 28)
 
 func part1(weights []int) int {
-	fmt.Printf("the sum: %d, the groups: %d\n", utility.SumSlice(weights), utility.SumSlice(weights)/3)
+	groups_weight := utility.SumSlice(weights) / 3 // the weight of each group (which is 508)
 	return 0
 }
 
