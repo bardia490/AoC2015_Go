@@ -36,7 +36,6 @@ func generateHappinessDiagram(happiness_diagram map[[2]string]int, people set.Se
 }
 
 func Solution1(f *os.File) {
-
 	happiness_diagram := make(map[[2]string]int, 56)
 	people := set.Create[string](8)
 

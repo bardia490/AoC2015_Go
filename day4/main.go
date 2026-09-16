@@ -3,21 +3,21 @@ package day4
 import (
 	"bytes"
 	"crypto/md5"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 )
 
 func FindCorrectHash1(in []byte) int {
 	result := 0
+	buffer := make([]byte, len(in), len(in)+20)
+	copy(buffer, in)
 
 	for {
-		val := fmt.Appendf(in, "%d", result)
-		hash := md5.Sum(val)
-		s := hex.EncodeToString(hash[:])
-		if s[0:5] == "00000" {
-			//fmt.Println("the val and s are:", string(val), s)
+		buffer := strconv.AppendInt(buffer, int64(result), 10)
+		hash := md5.Sum(buffer)
+		if hash[0] == 0 && hash[1] == 0 && hash[2] < 0x10 {
 			break
 		}
 		result += 1
@@ -26,13 +26,14 @@ func FindCorrectHash1(in []byte) int {
 }
 
 func FindCorrectHash2(in []byte) int {
-	result := 0
+	result := 282749
+	buffer := make([]byte, len(in), len(in)+20)
+	copy(buffer, in)
 
 	for {
-		val := fmt.Appendf(in, "%d", result)
-		hash := md5.Sum(val)
-		s := hex.EncodeToString(hash[:])
-		if s[0:6] == "000000" {
+		buffer := strconv.AppendInt(buffer[:len(in)], int64(result), 10)
+		hash := md5.Sum(buffer)
+		if hash[0] == 0 && hash[1] == 0 && hash[2] == 0 {
 			break
 		}
 		result += 1

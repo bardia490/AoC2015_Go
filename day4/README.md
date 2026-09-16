@@ -16,8 +16,4 @@ Now find one that starts with six zeroes.
 
 Your puzzle answer was 9962624.
 
-Both parts of this puzzle are complete! They provide two gold stars: **
-
-At this point, you should return to your Advent calendar and try another puzzle.
-
 Your puzzle input was yzbqklnj.
